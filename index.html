@@ -288,15 +288,18 @@ function render() {
 
   if (state && state.paper) {
     let v = state.paper.value;
-    if (live && state.book) {
-      for (const [c, usd] of Object.entries(state.paper.pos || {})) {
-        const sb = state.book[c], lb = live.book[c];
-        if (sb && lb && sb[2] > 0) v += usd * (lb.px / sb[2] - 1);
-      }
+    let gross = 0;
+    for (const [c, usd] of Object.entries(state.paper.pos || {})) {
+      const sb = state.book && state.book[c], lb = live && live.book[c];
+      const adj = (sb && lb && sb[2] > 0) ? usd * (lb.px / sb[2]) : usd;
+      if (sb && lb && sb[2] > 0) v += usd * (lb.px / sb[2] - 1);
+      gross += Math.abs(adj);
     }
+    const exitVal = v - gross * 6.5e-4; // close everything now: taker fee + slip
     const ret = v / state.paper.e0 - 1;
     $("paper").innerHTML = `$${v.toFixed(2)} <span class="${ret >= 0 ? "pos" : "neg"}" style="font-size:15px">${(ret >= 0 ? "+" : "") + (ret * 100).toFixed(2)}%</span>`;
-    $("paperSub").innerHTML = `mirroring since <b>${state.paper.started}</b> · fees + funding included`;
+    $("paperSub").innerHTML = `in-flight, marked to ${live ? "live" : "state"} prices · ` +
+      `if closed now ≈ <b class="num">$${exitVal.toFixed(2)}</b> · since <b>${state.paper.started}</b>`;
   } else {
     $("paper").textContent = "—";
     $("paperSub").textContent = "not armed yet";
