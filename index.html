@@ -1,0 +1,398 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0B0E14">
+<title>Whale Watch</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+:root{
+  --bg:#0B0E14; --surface:#141A28; --surface2:#1A2233; --line:#232E45;
+  --text:#E8ECF4; --muted:#8C95A9; --accent:#4FA3FF; --accent-dim:#274b75;
+  --up:#2FBF71; --down:#E5484D; --warn:#F0A93B; --flow:#B48CF2;
+  color-scheme:dark;
+}
+@media (prefers-color-scheme: light){
+  :root{
+    --bg:#F2F5FA; --surface:#FFFFFF; --surface2:#EDF1F8; --line:#D8DFEB;
+    --text:#1A2130; --muted:#5B6577; --accent:#1F6FD6; --accent-dim:#BBD4F2;
+    --up:#1E9E5A; --down:#CC3A40; --warn:#B97D14; --flow:#7B4FD6;
+    color-scheme:light;
+  }
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{
+  background:var(--bg); color:var(--text);
+  padding-inline:16px;
+  padding-block:calc(20px + env(safe-area-inset-top,0px)) calc(20px + env(safe-area-inset-bottom,0px));
+  font-family:'IBM Plex Sans',system-ui,-apple-system,sans-serif;
+  font-size:14px; line-height:1.45;
+}
+.wrap{max-width:680px; margin:0 auto; display:flex; flex-direction:column; gap:14px}
+.num{font-family:'IBM Plex Mono',ui-monospace,SFMono-Regular,Menlo,monospace; font-variant-numeric:tabular-nums}
+header{display:flex; flex-wrap:wrap; align-items:center; gap:8px 12px}
+h1{font-size:19px; font-weight:600; margin:0; letter-spacing:.2px}
+h2{font-size:12px; font-weight:600; margin:0 0 10px; color:var(--muted); text-transform:uppercase; letter-spacing:.09em}
+.dot{width:9px;height:9px;border-radius:50%;background:var(--up);display:inline-block;margin-right:8px}
+.dot.stale{background:var(--warn)} .dot.dead{background:var(--down)}
+@media (prefers-reduced-motion: no-preference){
+  .dot{animation:pulse 2.4s ease-in-out infinite}
+  @keyframes pulse{50%{opacity:.45}}
+}
+.addr{display:flex;align-items:center;gap:6px;margin-left:auto}
+.addr code{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--muted);background:var(--surface);border:1px solid var(--line);padding:3px 8px;border-radius:6px}
+button{
+  font:inherit;font-size:12px;color:var(--accent);background:none;
+  border:1px solid var(--line);border-radius:6px;padding:3px 10px;cursor:pointer
+}
+button:hover{border-color:var(--accent)}
+button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.meta{width:100%;display:flex;align-items:center;gap:10px;color:var(--muted);font-size:12px}
+.banner{background:var(--surface);border:1px solid var(--warn);color:var(--warn);border-radius:8px;padding:8px 12px;font-size:13px}
+.tiles{display:flex;gap:14px;flex-wrap:wrap}
+.tile{flex:1 1 200px;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px 16px}
+.tile .label{font-size:11px;text-transform:uppercase;letter-spacing:.09em;color:var(--muted);margin-bottom:6px}
+.tile .big{font-size:26px;font-weight:600;line-height:1.1}
+.tile .sub{font-size:12px;color:var(--muted);margin-top:4px}
+.tile .sub b{font-weight:600}
+.pos{color:var(--up)} .neg{color:var(--down)}
+#spark{display:block;width:100%;height:44px;margin-top:10px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px 16px}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{color:var(--muted);font-weight:500;text-align:right;padding:0 0 7px;font-size:11px;text-transform:uppercase;letter-spacing:.07em}
+th:first-child,td:first-child{text-align:left}
+td{padding:7px 0;border-top:1px solid var(--line);text-align:right;vertical-align:top}
+td .coin{font-family:'IBM Plex Mono',monospace;font-weight:500}
+td .venue{color:var(--muted)}
+.pill{display:inline-block;font-size:10.5px;font-weight:600;letter-spacing:.05em;padding:1.5px 7px;border-radius:99px;text-transform:uppercase}
+.pill.long{color:var(--up);background:color-mix(in srgb,var(--up) 14%,transparent)}
+.pill.short{color:var(--down);background:color-mix(in srgb,var(--down) 14%,transparent)}
+.sharebar{height:3px;border-radius:2px;background:var(--accent-dim);margin-top:5px;overflow:hidden}
+.sharebar i{display:block;height:100%;background:var(--accent)}
+.cardfoot{color:var(--muted);font-size:12px;margin-top:10px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:6px}
+.hint{font-weight:400;text-transform:none;letter-spacing:0;font-size:11px;color:var(--muted)}
+ol{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
+li.alert{display:flex;gap:10px;padding:9px 0;border-top:1px solid var(--line);align-items:baseline}
+li.alert:first-child{border-top:none}
+.k{flex:0 0 58px;font-size:10.5px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;text-align:center;padding:2px 0;border-radius:5px}
+.k.OPEN{color:var(--up);background:color-mix(in srgb,var(--up) 14%,transparent)}
+.k.CLOSE,.k.ERROR{color:var(--down);background:color-mix(in srgb,var(--down) 14%,transparent)}
+.k.ADD{color:var(--accent);background:color-mix(in srgb,var(--accent) 14%,transparent)}
+.k.CUT{color:var(--warn);background:color-mix(in srgb,var(--warn) 16%,transparent)}
+.k.FLIP,.k.FLOWS{color:var(--flow);background:color-mix(in srgb,var(--flow) 14%,transparent)}
+.k.INFO{color:var(--muted);background:var(--surface2)}
+.a-body{flex:1;min-width:0}
+.a-title{font-weight:600;font-size:13px}
+.a-msg{color:var(--muted);font-size:12.5px;overflow-wrap:anywhere}
+.a-time{flex:0 0 auto;color:var(--muted);font-size:11.5px;text-align:right}
+footer{color:var(--muted);font-size:11.5px;text-align:center;padding-block:6px}
+.empty{color:var(--muted);font-size:13px;padding:8px 0}
+.setup label{display:block;font-size:12px;color:var(--muted);margin:10px 0 4px}
+.setup input{width:100%;font:inherit;font-family:'IBM Plex Mono',monospace;font-size:13px;color:var(--text);background:var(--surface2);border:1px solid var(--line);border-radius:6px;padding:7px 10px}
+.setup button{margin-top:12px;padding:7px 16px;font-size:13px}
+</style>
+</head>
+<body>
+<main class="wrap">
+  <header>
+    <span><span class="dot" id="liveDot"></span><h1 style="display:inline">Whale Watch</h1></span>
+    <span class="addr"><code id="addrChip">—</code><button id="copyBtn">copy</button></span>
+    <div class="meta">
+      <span id="updated">loading…</span>
+      <button id="refreshBtn">refresh</button>
+      <span id="countdown"></span>
+      <span id="liveSrc" style="margin-left:auto"></span>
+    </div>
+  </header>
+
+  <section class="card setup" id="setupCard" hidden>
+    <h2>Connect</h2>
+    <p class="empty">Point this page at a watcher: the ntfy alert topic and the address it watches.
+    Both are stored only in this browser.</p>
+    <label for="inTopic">ntfy alert topic</label>
+    <input id="inTopic" placeholder="hl-whale-…" autocomplete="off" spellcheck="false">
+    <label for="inAddr">watched address</label>
+    <input id="inAddr" placeholder="0x…" autocomplete="off" spellcheck="false">
+    <button id="saveCfg">Save &amp; start</button>
+  </section>
+
+  <div class="banner" id="staleBanner" hidden></div>
+
+  <section class="tiles">
+    <div class="tile">
+      <div class="label">His equity (on-exchange)</div>
+      <div class="num big" id="equity">—</div>
+      <div class="sub" id="equitySub">&nbsp;</div>
+    </div>
+    <div class="tile">
+      <div class="label">$1K paper copy</div>
+      <div class="num big" id="paper">—</div>
+      <div class="sub" id="paperSub">&nbsp;</div>
+      <svg id="spark" viewBox="0 0 300 44" preserveAspectRatio="none" aria-label="paper copy 12h sparkline"></svg>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>Book</h2>
+    <table>
+      <thead><tr><th>Position</th><th>Notional</th><th>Mark</th><th>uPnL</th></tr></thead>
+      <tbody id="bookBody"><tr><td colspan="4" class="empty">waiting for state…</td></tr></tbody>
+    </table>
+    <div class="cardfoot"><span id="bookGross"></span><span id="bookLev"></span></div>
+  </section>
+
+  <section class="card">
+    <h2>Alerts <span class="hint">· last 12h shown — full history lives on the box</span></h2>
+    <ol id="alerts"><li class="empty">loading…</li></ol>
+  </section>
+
+  <footer>read-only surveillance of a public address · ntfy state feed + Hyperliquid public API · watcher runs on the fleet box</footer>
+</main>
+
+<script>
+const HL = "https://api.hyperliquid.xyz/info";
+const DEXES = ["", "xyz", "hyna", "para"];
+const REFRESH_S = 60;
+
+// config comes from the URL fragment (#t=<topic>&a=<address>) or localStorage;
+// the page source itself carries no topic or address
+function loadCfg() {
+  let cfg = null;
+  try {
+    const h = new URLSearchParams(location.hash.slice(1));
+    if (h.get("t") && h.get("a")) cfg = {topic: h.get("t"), addr: h.get("a")};
+  } catch {}
+  if (!cfg) {
+    try { cfg = JSON.parse(localStorage.getItem("ww-cfg")); } catch {}
+  }
+  if (cfg && cfg.topic && cfg.addr) {
+    try { localStorage.setItem("ww-cfg", JSON.stringify(cfg)); } catch {}
+    return cfg;
+  }
+  return null;
+}
+let CFG = loadCfg();
+
+let state = null, series = [], alerts = [], live = null, liveEquity = null;
+let nextAt = 0;
+
+const $ = id => document.getElementById(id);
+const fmtUsd = x => {
+  const a = Math.abs(x);
+  if (a >= 1e6) return "$" + (a / 1e6).toFixed(1) + "M";
+  if (a >= 1e4) return "$" + Math.round(a / 1e3) + "K";
+  return "$" + a.toLocaleString(undefined, {maximumFractionDigits: 0});
+};
+const rel = ms => {
+  const s = Math.max(0, (Date.now() - ms) / 1000);
+  if (s < 90) return Math.round(s) + "s ago";
+  if (s < 5400) return Math.round(s / 60) + "m ago";
+  return (s / 3600).toFixed(1) + "h ago";
+};
+const hhmm = ms => new Date(ms).toLocaleTimeString([], {hour: "2-digit", minute: "2-digit"});
+
+async function pollTopic(topic) {
+  const r = await fetch(`https://ntfy.sh/${topic}/json?poll=1&since=13h`);
+  if (!r.ok) throw new Error("ntfy " + r.status);
+  return (await r.text()).split("\n").filter(Boolean).map(l => {
+    try { return JSON.parse(l); } catch { return null; }
+  }).filter(m => m && m.event === "message");
+}
+
+async function hl(body) {
+  const r = await fetch(HL, {method: "POST", headers: {"Content-Type": "application/json"},
+                             body: JSON.stringify(body)});
+  if (!r.ok) throw new Error("hl " + r.status);
+  return r.json();
+}
+
+async function enrichLive() {
+  const book = {};
+  for (const dx of DEXES) {
+    const q = {type: "clearinghouseState", user: CFG.addr};
+    if (dx) q.dex = dx;
+    const st = await hl(q);
+    for (const ap of (st.assetPositions || [])) {
+      const p = ap.position, szi = +p.szi;
+      if (!szi) continue;
+      const ntl = +p.positionValue;
+      book[p.coin] = {szi, ntl: szi > 0 ? ntl : -ntl, px: ntl / Math.abs(szi),
+                      entry: +p.entryPx, upnl: +p.unrealizedPnl};
+    }
+  }
+  const pf = await hl({type: "portfolio", user: CFG.addr});
+  const h = Object.fromEntries(pf).allTime.accountValueHistory;
+  liveEquity = +h[h.length - 1][1];
+  live = {book, ts: Date.now()};
+}
+
+async function refresh() {
+  if (!CFG) return;
+  try {
+    const msgs = await pollTopic(CFG.topic + "-state");
+    const states = msgs.filter(m => m.title === "state")
+      .map(m => { try { return JSON.parse(m.message); } catch { return null; } })
+      .filter(Boolean);
+    if (states.length) {
+      state = states[states.length - 1];
+      series = states.map(s => ({t: Date.parse(s.ts), v: s.paper && s.paper.value}))
+                     .filter(p => p.v != null);
+      try { localStorage.setItem("ww-state", JSON.stringify(state)); } catch {}
+    }
+  } catch {}
+  try { alerts = (await pollTopic(CFG.topic)).sort((a, b) => b.time - a.time); } catch {}
+  live = null; liveEquity = null;
+  try { await enrichLive(); } catch {}
+  nextAt = Date.now() + REFRESH_S * 1000;
+  render();
+}
+
+function kindOf(title) {
+  const t = title || "";
+  if (t.includes("OPEN")) return "OPEN";
+  if (t.includes("CLOSED")) return "CLOSE";
+  if (t.includes("ADD")) return "ADD";
+  if (t.includes("CUT")) return "CUT";
+  if (t.includes("FLIP")) return "FLIP";
+  if (t.includes("withdrawal") || t.includes("deposit") || t.includes("equity")) return "FLOWS";
+  if (t.includes("degraded")) return "ERROR";
+  return "INFO";
+}
+
+function sparkline() {
+  const svg = $("spark");
+  if (series.length < 2) { svg.innerHTML = ""; return; }
+  const vs = series.map(p => p.v), t0 = series[0].t, t1 = series[series.length - 1].t;
+  let lo = Math.min(...vs), hi = Math.max(...vs);
+  if (hi - lo < 1) { hi += 1; lo -= 1; }
+  const X = t => 4 + 292 * (t - t0) / Math.max(1, t1 - t0);
+  const Y = v => 38 - 32 * (v - lo) / (hi - lo);
+  const pts = series.map(p => X(p.t).toFixed(1) + "," + Y(p.v).toFixed(1)).join(" ");
+  const last = series[series.length - 1];
+  const up = last.v >= series[0].v;
+  const col = up ? "var(--up)" : "var(--down)";
+  svg.innerHTML =
+    `<polyline points="4,42 ${pts} ${X(last.t).toFixed(1)},42" fill="color-mix(in srgb,${col} 12%,transparent)" stroke="none"/>` +
+    `<polyline points="${pts}" fill="none" stroke="${col}" stroke-width="1.6"/>` +
+    `<circle cx="${X(last.t).toFixed(1)}" cy="${Y(last.v).toFixed(1)}" r="2.6" fill="${col}"/>`;
+}
+
+function render() {
+  if (!CFG) return;
+  $("addrChip").textContent = CFG.addr.slice(0, 6) + "…" + CFG.addr.slice(-4);
+  const eq = liveEquity ?? (state && state.equity);
+  $("equity").textContent = eq ? fmtUsd(eq) : "—";
+  $("equitySub").textContent = state ? `watcher state ${rel(Date.parse(state.ts))}` : "no state received";
+
+  if (state && state.paper) {
+    let v = state.paper.value;
+    if (live && state.book) {
+      for (const [c, usd] of Object.entries(state.paper.pos || {})) {
+        const sb = state.book[c], lb = live.book[c];
+        if (sb && lb && sb[2] > 0) v += usd * (lb.px / sb[2] - 1);
+      }
+    }
+    const ret = v / state.paper.e0 - 1;
+    $("paper").innerHTML = `$${v.toFixed(2)} <span class="${ret >= 0 ? "pos" : "neg"}" style="font-size:15px">${(ret >= 0 ? "+" : "") + (ret * 100).toFixed(2)}%</span>`;
+    $("paperSub").innerHTML = `mirroring since <b>${state.paper.started}</b> · fees + funding included`;
+  } else {
+    $("paper").textContent = "—";
+    $("paperSub").textContent = "not armed yet";
+  }
+  sparkline();
+
+  const book = live ? live.book
+    : (state && state.book)
+      ? Object.fromEntries(Object.entries(state.book).map(([c, v]) =>
+          [c, {szi: v[0], ntl: v[1], px: v[2]}]))
+      : null;
+  const tb = $("bookBody");
+  if (book && Object.keys(book).length) {
+    const rows = Object.entries(book).sort((a, b) => Math.abs(b[1].ntl) - Math.abs(a[1].ntl));
+    let gross = 0;
+    tb.innerHTML = rows.map(([c, p]) => {
+      gross += Math.abs(p.ntl);
+      const [venue, sym] = c.includes(":") ? c.split(":") : ["main", c];
+      const share = eq ? Math.min(1, Math.abs(p.ntl) / eq) : 0;
+      const upnl = p.upnl != null && !Number.isNaN(p.upnl)
+        ? `<span class="num ${p.upnl >= 0 ? "pos" : "neg"}">${(p.upnl >= 0 ? "+" : "−") + fmtUsd(p.upnl).slice(1)}</span>`
+        : `<span class="num" style="color:var(--muted)">—</span>`;
+      return `<tr>
+        <td><span class="coin">${sym}</span> <span class="venue">· ${venue}</span>
+            <span class="pill ${p.ntl >= 0 ? "long" : "short"}">${p.ntl >= 0 ? "long" : "short"}</span>
+            <div class="sharebar" style="max-width:120px"><i style="width:${(share * 100).toFixed(0)}%"></i></div></td>
+        <td class="num">${fmtUsd(p.ntl)}</td>
+        <td class="num">${p.px >= 100 ? p.px.toFixed(2) : p.px.toFixed(4)}${p.entry ? `<div class="venue" style="font-size:11px">in ${p.entry >= 100 ? p.entry.toFixed(2) : p.entry.toFixed(4)}</div>` : ""}</td>
+        <td>${upnl}</td></tr>`;
+    }).join("");
+    $("bookGross").textContent = "gross " + fmtUsd(gross);
+    $("bookLev").textContent = eq ? "≈" + (gross / eq).toFixed(1) + "x of his equity" : "";
+  } else {
+    tb.innerHTML = `<tr><td colspan="4" class="empty">book flat or no data</td></tr>`;
+  }
+
+  const ol = $("alerts");
+  ol.innerHTML = alerts.length ? alerts.map(m => {
+    const k = kindOf(m.title);
+    return `<li class="alert"><span class="k ${k}">${k}</span>
+      <span class="a-body"><span class="a-title">${(m.title || "").replace(/</g, "&lt;")}</span><br>
+      <span class="a-msg">${(m.message || "").replace(/</g, "&lt;")}</span></span>
+      <span class="a-time num">${hhmm(m.time * 1000)}<br>${rel(m.time * 1000)}</span></li>`;
+  }).join("") : `<li class="empty">no alerts in the last 12h — he's been quiet</li>`;
+
+  const age = state ? Date.now() - Date.parse(state.ts) : Infinity;
+  const dot = $("liveDot"), banner = $("staleBanner");
+  if (age < 45 * 60 * 1000) {
+    dot.className = "dot"; banner.hidden = true;
+  } else if (isFinite(age)) {
+    dot.className = "dot stale"; banner.hidden = false;
+    banner.textContent = `State feed is ${Math.round(age / 60000)} minutes old — the watcher may be down, or ntfy's 12h cache expired. Check: systemctl status hl-whale-watcher on the fleet box.`;
+  } else {
+    dot.className = "dot dead"; banner.hidden = false;
+    banner.textContent = "No state received from the watcher yet.";
+  }
+  $("updated").textContent = "updated " + hhmm(Date.now());
+  $("liveSrc").textContent = live ? "marks: live API" : "marks: state feed";
+}
+
+function boot() {
+  if (!CFG) {
+    $("setupCard").hidden = false;
+    $("updated").textContent = "not configured";
+    return;
+  }
+  $("setupCard").hidden = true;
+  try {
+    const cached = localStorage.getItem("ww-state");
+    if (cached) { state = JSON.parse(cached); render(); }
+  } catch {}
+  refresh();
+}
+
+$("saveCfg").addEventListener("click", () => {
+  const topic = $("inTopic").value.trim(), addr = $("inAddr").value.trim();
+  if (!topic || !/^0x[0-9a-fA-F]{40}$/.test(addr)) return;
+  CFG = {topic, addr};
+  try { localStorage.setItem("ww-cfg", JSON.stringify(CFG)); } catch {}
+  boot();
+});
+$("refreshBtn").addEventListener("click", refresh);
+$("copyBtn").addEventListener("click", async () => {
+  if (!CFG) return;
+  try { await navigator.clipboard.writeText(CFG.addr); $("copyBtn").textContent = "copied"; }
+  catch { $("addrChip").textContent = CFG.addr; $("copyBtn").textContent = "select it"; }
+  setTimeout(() => { $("copyBtn").textContent = "copy"; }, 1800);
+});
+setInterval(() => {
+  if (!CFG) return;
+  const s = nextAt ? Math.max(0, Math.round((nextAt - Date.now()) / 1000)) : 0;
+  $("countdown").textContent = nextAt ? "next in " + s + "s" : "";
+  if (s === 0 && nextAt) { nextAt = 0; refresh(); }
+}, 1000);
+
+boot();
+</script>
+</body>
+</html>
