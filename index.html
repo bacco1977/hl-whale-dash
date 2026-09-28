@@ -78,7 +78,7 @@ li.alert{display:flex;gap:10px;padding:9px 0;border-top:1px solid var(--line);al
 li.alert:first-child{border-top:none}
 .k{flex:0 0 58px;font-size:10.5px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;text-align:center;padding:2px 0;border-radius:5px}
 .k.OPEN{color:var(--up);background:color-mix(in srgb,var(--up) 14%,transparent)}
-.k.CLOSE,.k.ERROR{color:var(--down);background:color-mix(in srgb,var(--down) 14%,transparent)}
+.k.CLOSE,.k.ERROR,.k.LIQ{color:var(--down);background:color-mix(in srgb,var(--down) 14%,transparent)}
 .k.ADD{color:var(--accent);background:color-mix(in srgb,var(--accent) 14%,transparent)}
 .k.CUT{color:var(--warn);background:color-mix(in srgb,var(--warn) 16%,transparent)}
 .k.FLIP,.k.FLOWS{color:var(--flow);background:color-mix(in srgb,var(--flow) 14%,transparent)}
@@ -257,6 +257,7 @@ function kindOf(title) {
   if (t.includes("ADD")) return "ADD";
   if (t.includes("CUT")) return "CUT";
   if (t.includes("FLIP")) return "FLIP";
+  if (t.includes("LIQ")) return "LIQ";
   if (t.includes("withdrawal") || t.includes("deposit") || t.includes("equity")) return "FLOWS";
   if (t.includes("degraded")) return "ERROR";
   return "INFO";
