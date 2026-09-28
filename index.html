@@ -219,7 +219,8 @@ async function enrichLive() {
       if (!szi) continue;
       const ntl = +p.positionValue;
       book[p.coin] = {szi, ntl: szi > 0 ? ntl : -ntl, px: ntl / Math.abs(szi),
-                      entry: +p.entryPx, upnl: +p.unrealizedPnl};
+                      entry: +p.entryPx, upnl: +p.unrealizedPnl,
+                      liq: p.liquidationPx ? +p.liquidationPx : null};
     }
   }
   const pf = await hl({type: "portfolio", user: CFG.addr});
@@ -327,7 +328,7 @@ function render() {
             <span class="pill ${p.ntl >= 0 ? "long" : "short"}">${p.ntl >= 0 ? "long" : "short"}</span>
             <div class="sharebar" style="max-width:120px"><i style="width:${(share * 100).toFixed(0)}%"></i></div></td>
         <td class="num">${fmtUsd(p.ntl)}</td>
-        <td class="num">${p.px >= 100 ? p.px.toFixed(2) : p.px.toFixed(4)}${p.entry ? `<div class="venue" style="font-size:11px">in ${p.entry >= 100 ? p.entry.toFixed(2) : p.entry.toFixed(4)}</div>` : ""}</td>
+        <td class="num">${p.px >= 100 ? p.px.toFixed(2) : p.px.toFixed(4)}${p.entry ? `<div class="venue" style="font-size:11px">in ${p.entry >= 100 ? p.entry.toFixed(2) : p.entry.toFixed(4)}</div>` : ""}${p.liq ? (d => `<div style="font-size:11px;color:${d < 10 ? "var(--down)" : d < 20 ? "var(--warn)" : "var(--muted)"}">liq ${p.liq >= 100 ? p.liq.toFixed(2) : p.liq.toFixed(4)} (${d.toFixed(1)}% away)</div>`)((p.px - p.liq) / p.px * 100 * (p.ntl >= 0 ? 1 : -1)) : ""}</td>
         <td>${upnl}</td></tr>`;
     }).join("");
     $("bookGross").textContent = "gross " + fmtUsd(gross);
